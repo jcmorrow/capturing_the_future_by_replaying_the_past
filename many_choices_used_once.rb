@@ -24,12 +24,11 @@ def get(choices, state)
 end
 
 def with_nondeterminism
-  results = []
-  yield
+  results = [yield]
 
-  while @state
-    results << yield
+  while @state && next_index(@state)
     @state = next_index(@state)
+    results << yield
   end
 
   results
@@ -50,6 +49,13 @@ end
 
 puts result.to_s
 # => []
+
+result = with_nondeterminism do
+  2 * 2
+end
+
+puts result.to_s
+# => [4]
 
 result = with_nondeterminism do
   2 * choose(1, 2, 3)
