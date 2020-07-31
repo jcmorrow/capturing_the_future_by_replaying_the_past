@@ -5,22 +5,24 @@
 # withNondeterminism (fn()⇒2*choose [1, 2, 3]);
 # valit = [2,4,6]:int list
 
+State = Struct.new(:index, :length)
+
 @state = nil
 
 def start_index(choices)
-  [0, choices.count]
+  State.new(0, choices.count)
 end
 
 def next_index(state)
-  if state[0] + 1 == state[1]
+  if state.index + 1 == state.length
     nil
   else
-    [state[0] + 1, state[1]]
+    State.new(state.index + 1, state.length)
   end
 end
 
 def get(choices, state)
-  choices[state[0]]
+  choices[state.index]
 end
 
 def with_nondeterminism
