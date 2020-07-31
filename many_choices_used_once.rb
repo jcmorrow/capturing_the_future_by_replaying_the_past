@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-# withNondeterminism (fn()⇒2*choose []);
-# valit = []:int list
-# withNondeterminism (fn()⇒2*choose [1, 2, 3]);
-# valit = [2,4,6]:int list
+class Empty < StandardError
+end
 
 State = Struct.new(:index, :length)
 
@@ -27,7 +25,7 @@ end
 
 def with_nondeterminism
   results = []
-  yield if @state.nil?
+  yield
 
   while @state
     results << yield
@@ -35,14 +33,23 @@ def with_nondeterminism
   end
 
   results
+rescue Empty
+  []
 end
 
 def choose(*choices)
-  return [] if choices.empty?
+  raise Empty if choices.empty?
 
   @state = start_index(choices) if @state.nil?
   get(choices, @state)
 end
+
+result = with_nondeterminism do
+  2 * choose
+end
+
+puts result.to_s
+# => []
 
 result = with_nondeterminism do
   2 * choose(1, 2, 3)
