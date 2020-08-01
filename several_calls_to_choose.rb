@@ -2,7 +2,11 @@
 
 require 'pry'
 
-State = Struct.new(:index, :length)
+State = Struct.new(:index, :length) do
+  def inspect
+    "(#{index}, #{length})"
+  end
+end
 
 @past = []
 @future = []
@@ -35,12 +39,12 @@ def next_path(past)
   return [] if past.empty?
 
   # | next_path (i :: is) =
-  i, *is = past.reverse
+  i, *is = past
 
   # case next_idx i of
   if next_index(i)
     # SOME i' => i' :: is
-    [*is, next_index(i)]
+    [next_index(i), *is]
   else
     # | NONE => next_path is
     next_path(is)
@@ -49,9 +53,7 @@ end
 
 def with_nondeterminism(&block)
   v = [block.call]
-  # binding.pry
-  next_future = next_path(@past)
-  # puts("next_future: #{next_future.inspect}")
+  next_future = next_path(@past).reverse
   @past = []
   @future = next_future
   return v if @future.empty?
@@ -62,16 +64,26 @@ rescue Empty
 end
 
 def choose(*choices)
+  # fun choose [] = raise Empty
   raise Empty if choices.empty?
 
+  # | choose xs = case pop future of
+  # NONE => (* no future: start an index; push it into the past *)
+  # let val i = start_idx xs in
+  # | SOME i => (push past i; get xs i)
   i = @future.shift || start_index(choices)
+  puts("Using: #{i.inspect}")
   @past.unshift(i)
   get(choices, i)
 end
 
 result = with_nondeterminism do
-  choose(1, 2) * choose(3, 4)
+  a = choose(true, false)
+  if a
+    [a, choose(5, 6)]
+  else
+    [a, choose(7, 8, 9)]
+  end
 end
 
 puts(result.inspect)
-# => [3, 4, 6, 8]
