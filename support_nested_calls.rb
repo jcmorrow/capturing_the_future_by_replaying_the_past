@@ -8,6 +8,7 @@ State = Struct.new(:index, :length) do
   end
 end
 
+@contexts = []
 @past = []
 @future = []
 
@@ -47,18 +48,6 @@ def next_path(past)
   end
 end
 
-def with_nondeterminism(&block)
-  v = [block.call]
-  next_future = next_path(@past).reverse
-  @past = []
-  @future = next_future
-  return v if @future.empty?
-
-  [*v, *with_nondeterminism(&block)]
-rescue Empty
-  []
-end
-
 def choose(*choices)
   # fun choose [] = raise Empty
   raise Empty if choices.empty?
@@ -71,6 +60,27 @@ def choose(*choices)
   puts("Using: #{i.inspect}")
   @past.unshift(i)
   get(choices, i)
+end
+
+def loop_block(&block)
+  v = [block.call]
+  next_future = next_path(@past).reverse
+  @past = []
+  @future = next_future
+  return v if @future.empty?
+
+  [*v, *loop_block(&block)]
+rescue Empty
+  []
+end
+
+def with_nondeterminism(&block)
+  @contexts.unshift([@past, @future])
+
+  result = loop_block(&block)
+
+  @past, @future = @contexts.shift
+  result
 end
 
 result = with_nondeterminism do
