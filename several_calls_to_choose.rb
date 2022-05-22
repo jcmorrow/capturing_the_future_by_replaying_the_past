@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'pry'
 
 State = Struct.new(:index, :length) do
   def inspect
