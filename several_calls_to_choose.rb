@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 State = Struct.new(:index, :length) do
   def inspect
     "(#{index}, #{length})"
